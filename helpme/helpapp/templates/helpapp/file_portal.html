@@ -1,0 +1,165 @@
+{% extends "helpapp/base.html" %}
+{% load static %}
+
+{% block title %}HelpApp | Files{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'helpapp/css/file_portal.css' %}" />
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+    <div class="hero-text">
+        <p class="eyebrow">Files Overview</p>
+        <h1>Files Portal</h1>
+        <p class="subtitle">
+            Upload and live search are available here.
+        </p>
+        <a class="hero-cta" href="#files">Open File Console</a>
+    </div>
+    <div class="hero-grid">
+        <article class="metric-card">
+            <p>Total Files</p>
+            <h3 id="metricTotalFiles">0</h3>
+        </article>
+        <article class="metric-card">
+            <p>Storage Used</p>
+            <h3 id="metricStorage">0 KB</h3>
+        </article>
+        <article class="metric-card">
+            <p>File Types</p>
+            <h3 id="metricTypes">0</h3>
+        </article>
+        <article class="metric-card">
+            <p>Last Activity</p>
+            <h3 id="metricActivity">-</h3>
+        </article>
+    </div>
+</section>
+
+<main id="files" class="shell">
+    {% if messages %}
+    <section class="panel control-panel">
+        {% for message in messages %}
+        <p class="flash flash-{{ message.tags }}">{{ message }}</p>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <section class="panel control-panel">
+        <div class="panel-head">
+            <h2>Search Console</h2>
+            <button id="clearSearch" type="button" class="ghost-btn">Clear</button>
+        </div>
+
+        <div class="search-wrap">
+            <label for="fileSearch">Search files</label>
+            <input
+                id="fileSearch"
+                type="text"
+                autocomplete="off"
+                placeholder="Type filename, extension, or keyword"
+            />
+            <div id="searchResults" class="search-results" aria-live="polite"></div>
+        </div>
+
+        <div class="filter-row" role="group" aria-label="File filters">
+            <button class="filter-chip active" data-filter="all" type="button">All</button>
+            <button class="filter-chip" data-filter="docs" type="button">Docs</button>
+            <button class="filter-chip" data-filter="images" type="button">Images</button>
+            <button class="filter-chip" data-filter="sheets" type="button">Sheets</button>
+            <button class="filter-chip" data-filter="other" type="button">Other</button>
+        </div>
+
+        <p class="hint">Pro tip: Select a popup result to spotlight that file in the vault.</p>
+    </section>
+
+    <section class="panel action-panel">
+        <form
+            class="upload-box"
+            id="uploadBox"
+            method="post"
+            enctype="multipart/form-data"
+            data-clear-session-url="{% url 'clear_file_session' %}"
+        >
+            {% csrf_token %}
+            <h2>Drop Zone</h2>
+            <p>Choose a collection, then drag files here or use picker.</p>
+
+            <label class="field-label" for="collectionSelect">Collection</label>
+            <select id="collectionSelect" name="collection" class="field-input" required>
+                <option value="" selected disabled>Select collection</option>
+                {% for collection in collections %}
+                <option value="{{ collection.id }}">{{ collection.name }}</option>
+                {% empty %}
+                <option value="" disabled>No collections available</option>
+                {% endfor %}
+            </select>
+
+            <input id="fileInput" name="files" type="file" multiple hidden {% if not collections %}disabled{% endif %} />
+            <div class="upload-actions">
+                <button id="browseBtn" type="button" {% if not collections %}disabled{% endif %}>Choose Files</button>
+                <button class="submit-btn" type="submit" {% if not collections %}disabled{% endif %}>Upload</button>
+            </div>
+            <p id="selectedFilesText" class="hint">
+                {% if collections %}No files selected.{% else %}Create a collection first to upload files.{% endif %}
+            </p>
+            <div id="uploadProgressWrap" class="upload-progress-wrap" hidden>
+                <progress id="uploadProgressBar" class="upload-progress-native" value="0" max="100"></progress>
+                <p id="uploadProgressText" class="hint upload-progress-text"></p>
+            </div>
+        </form>
+
+        <div class="file-list-wrap">
+            <div class="file-list-header">
+                <h3>Vault Content</h3>
+                <div class="header-actions">
+                    <a class="ghost-link" href="{% url 'all_files' %}">All Files ({{ all_files_count }})</a>
+                    <span id="fileCount" class="pill">0 files</span>
+                </div>
+            </div>
+            <div id="fileList" class="file-list">
+                {% for item in files %}
+                <article
+                    class="file-card"
+                    data-file="{{ item.document.title }}"
+                    data-search="{{ item.document.title|lower }}"
+                    data-size="{{ item.document.file.size }}"
+                >
+                    <div class="file-main">
+                        <a class="file-name" href="{{ item.document.file.url }}" target="_blank" rel="noopener">{{ item.document.title }}</a>
+                        <span class="file-meta">
+                            {{ item.collection.name }} | {{ item.status }} | {{ item.document.uploaded_at|date:"Y-m-d" }}
+                        </span>
+                    </div>
+                    <div class="file-actions">
+                        <span class="ext">{{ item.document.file.name|slice:"-4:" }}</span>
+                        <form method="post" action="{% url 'delete_file' item.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}" />
+                            <button
+                                class="delete-btn"
+                                type="submit"
+                                onclick="return confirm('Delete this file and its vectors from this collection?');"
+                            >
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </article>
+                {% empty %}
+                <article class="file-card">
+                    <div class="file-main">
+                        <span class="file-name">No files uploaded yet.</span>
+                        <span class="file-meta">Upload to a collection above.</span>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'helpapp/js/file_portal.js' %}"></script>
+{% endblock %}

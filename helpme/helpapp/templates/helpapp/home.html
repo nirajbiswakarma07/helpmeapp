@@ -1,0 +1,26 @@
+{% extends "helpapp/base.html" %}
+{% load static %}
+
+{% block title %}HelpApp | Home{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'helpapp/css/file_portal.css' %}" />
+{% endblock %}
+
+{% block content %}
+<section class="hero single-column">
+    <div class="hero-text text-center">
+        <h2 class="eyebrow">Your Study Assistant</h2>
+        <hr>
+        <h1>Upload Your Notes, Then Ask Questions From Them</h1>
+        <p class="text-center">
+            Start by uploading class notes, PDFs, or images in the Files page.
+            Then open Ask to get answers directly from your uploaded study material.
+        </p>
+        <p>Make sure the images are clean use high quality images.</p>
+        <div class="upload-actions">
+            <a class="hero-cta" href="{% url 'file_portal' %}">Upload Study Files</a>
+            <a class="hero-cta" href="{% url 'ask' %}">Ask From Files</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

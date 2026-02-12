@@ -1,0 +1,70 @@
+{% extends "helpapp/base.html" %}
+{% load static %}
+
+{% block title %}HelpApp | All Files{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'helpapp/css/file_portal.css' %}" />
+{% endblock %}
+
+{% block content %}
+<section class="hero single-column">
+    <div class="hero-text">
+        <p class="eyebrow">All Uploads</p>
+        <h1>All Files</h1>
+        <p class="subtitle">
+            This page shows every uploaded file across all sessions.
+        </p>
+        <a class="hero-cta" href="{% url 'file_portal' %}">Back To Session Vault</a>
+    </div>
+</section>
+
+<main class="shell single">
+    <section class="panel control-panel">
+        {% if messages %}
+        {% for message in messages %}
+        <p class="flash flash-{{ message.tags }}">{{ message }}</p>
+        {% endfor %}
+        {% endif %}
+
+        <div class="file-list-wrap">
+            <div class="file-list-header">
+                <h3>All Files</h3>
+                <span class="pill">{{ files|length }} files</span>
+            </div>
+            <div class="file-list">
+                {% for item in files %}
+                <article class="file-card">
+                    <div class="file-main">
+                        <a class="file-name" href="{{ item.document.file.url }}" target="_blank" rel="noopener">{{ item.document.title }}</a>
+                        <span class="file-meta">
+                            {{ item.collection.name }} | {{ item.status }} | {{ item.document.uploaded_at|date:"Y-m-d" }}
+                        </span>
+                    </div>
+                    <div class="file-actions">
+                        <span class="ext">{{ item.document.file.name|slice:"-4:" }}</span>
+                        <form method="post" action="{% url 'delete_file' item.id %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}" />
+                            <button
+                                class="delete-btn"
+                                type="submit"
+                                onclick="return confirm('Delete this file and its vectors from this collection?');"
+                            >
+                                Delete
+                            </button>
+                        </form>
+                    </div>
+                </article>
+                {% empty %}
+                <article class="file-card">
+                    <div class="file-main">
+                        <span class="file-name">No files found.</span>
+                        <span class="file-meta">Upload files from Files page.</span>
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock %}

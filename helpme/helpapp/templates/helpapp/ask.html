@@ -1,0 +1,95 @@
+{% extends "helpapp/base.html" %}
+{% load static %}
+
+{% block title %}HelpApp | Ask{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'helpapp/css/file_portal.css' %}" />
+{% endblock %}
+
+{% block content %}
+<section class="hero single-column">
+    <div class="hero-text">
+        <p class="eyebrow">Ask Assistant</p>
+        <h1>Ask Questions by Collection</h1>
+        <p class="subtitle">
+            Select a Qdrant collection and ask a question. The answer is generated from that collection context.
+        </p>
+    </div>
+</section>
+
+<main class="shell single">
+    <section class="panel control-panel">
+        {% if messages %}
+            {% for message in messages %}
+            <p class="flash flash-{{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <div class="panel-head">
+            <h2>Q&A Console</h2>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <label class="field-label" for="collectionSelect">Collection</label>
+            <select id="collectionSelect" name="collection" class="field-input" required>
+                <option value="" disabled {% if not selected_collection_id %}selected{% endif %}>Select collection</option>
+                {% for collection in collections %}
+                <option value="{{ collection.id }}" {% if selected_collection_id == collection.id|stringformat:"s" %}selected{% endif %}>
+                    {{ collection.name }}
+                </option>
+                {% empty %}
+                <option value="" disabled>No collections available</option>
+                {% endfor %}
+            </select>
+
+            <label class="field-label" for="questionInput">Question</label>
+            <textarea
+                id="questionInput"
+                name="question"
+                class="field-input"
+                rows="4"
+                placeholder="Ask your question..."
+                {% if not collections %}disabled{% endif %}
+                required
+            >{{ question }}</textarea>
+
+            <div class="upload-actions">
+                <button class="submit-btn" type="submit" {% if not collections %}disabled{% endif %}>Ask</button>
+            </div>
+        </form>
+
+        {% if qa_history %}
+        <div class="file-list-wrap" style="margin-top: 1rem;">
+            <div class="file-list-header">
+                <h3>Q&A History</h3>
+            </div>
+            <div class="file-list">
+                {% for item in qa_history %}
+                <article class="file-card">
+                    <div class="file-main">
+                        <span class="file-meta">Collection: {{ item.collection_name }}</span>
+                        <span class="file-name">Q: {{ item.question }}</span>
+                        <span class="file-meta">A: {{ item.answer }}</span>
+                        {% if item.sources %}
+                        <div style="margin-top: 0.5rem;">
+                            <strong>Sources:</strong>
+                            <ul style="margin: 0.3rem 0 0 1rem; padding: 0;">
+                                {% for source in item.sources %}
+                                <li style="list-style: disc;">
+                                    📄 {{ source.file }} — Page {{ source.page }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </section>
+</main>
+{% endblock %}
