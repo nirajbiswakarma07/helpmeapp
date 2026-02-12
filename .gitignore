@@ -13,3 +13,7 @@ wheels/
 **/migrations/**
 !**/migrations
 !**/migrations/__init__.py
+
+
+# Qdrant local storage
+qdrant_storage/
