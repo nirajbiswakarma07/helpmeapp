@@ -17,3 +17,4 @@ wheels/
 
 # Qdrant local storage
 qdrant_storage/
+.evn
