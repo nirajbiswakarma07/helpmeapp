@@ -113,8 +113,8 @@ Vector Storage
 ## Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/rag-project.git
-cd rag-project
+git clone https://github.com/nirajbiswakarma07/helpmeapp.git
+cd helpmeapp
 ```
 
 ---
